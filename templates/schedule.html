@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <div class="text-center mb-20 animate-fade-in">
+        <div class="inline-flex items-center gap-3 px-4 py-1.5 glass rounded-full mb-6 border-[var(--glass-border)]">
+            <span class="text-[var(--accent)] text-[9px] font-bold uppercase tracking-[0.2em]">Weekly Updates</span>
+        </div>
+        <h1 class="text-4xl md:text-7xl font-black mb-6 tracking-tighter uppercase grad-text leading-none text-[var(--text-main)]">
+            Airing <span class="text-[var(--primary)]">Schedule</span>
+        </h1>
+        <p class="text-[var(--text-dim)] font-bold text-xs max-w-xl mx-auto uppercase tracking-[0.2em] leading-relaxed">Stay updated with the latest anime releases for each day of the week.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {% if schedules %}
+            {% for day, items in schedules.items() %}
+            <div class="glass group rounded-3xl overflow-hidden border-[var(--glass-border)] hover:border-[var(--primary)] transition-all duration-700 animate-fade-in flex flex-col" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="bg-gradient-to-br from-[var(--primary)]/20 via-transparent to-transparent p-6 border-b border-[var(--glass-border)]">
+                    <h3 class="text-xl font-black tracking-tighter flex items-center uppercase text-[var(--text-main)]">
+                        <i class="fa-solid fa-calendar-day mr-4 text-[var(--primary)]"></i>
+                        {{ day }}
+                    </h3>
+                </div>
+                <div class="p-4 flex-1">
+                    <div class="space-y-4">
+                        {% if items and items|length > 0 %}
+                            {% for item in items %}
+                            <div class="flex flex-col gap-2 p-3 glass bg-white/5 rounded-2xl hover:bg-white/10 transition-all group/item text-[var(--text-main)]">
+                                {% if item.image %}
+                                <div class="w-full aspect-video rounded-xl overflow-hidden mb-2 relative bg-black/20">
+                                    <img src="{{ item.image }}" alt="{{ item.name }}"
+                                         class="w-full h-full object-cover"
+                                         onerror="this.parentElement.style.display='none'; this.closest('.flex').querySelector('.fallback-time').style.display='flex';">
+                                    <div class="absolute bottom-2 left-2 px-2 py-1 glass text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur-md border border-white/10">{{ item.time }}</div>
+                                </div>
+                                {% endif %}
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="fallback-time {% if item.image %}hidden{% else %}flex{% endif %} items-center gap-3">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse"></div>
+                                            <span class="text-[9px] font-black text-[var(--accent)] uppercase tracking-widest">{{ item.time }}</span>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase tracking-tight line-clamp-2">{{ item.name }}</span>
+                                    </div>
+                                    <div class="countdown-container flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/5"
+                                         data-day="{{ day }}" data-time="{{ item.time }}">
+                                        <i class="fa-regular fa-clock text-[8px] text-[var(--text-dim)]"></i>
+                                        <span class="text-[var(--accent)] text-[9px] tracking-tighter uppercase font-black countdown-timer">Calculating...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="py-20 text-center text-[var(--text-dim)] italic opacity-40">
+                                <i class="fa-solid fa-calendar-xmark text-4xl mb-6 block"></i>
+                                NO SCHEDULE
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-span-full py-40 text-center glass rounded-[4rem]">
+                <i class="fa-solid fa-triangle-exclamation text-8xl text-[var(--accent)] mb-10 opacity-30"></i>
+                <h3 class="text-3xl font-black uppercase grad-text text-[var(--text-main)]">Schedule Offline</h3>
+                <p class="text-[var(--text-dim)] mt-6 font-bold uppercase tracking-widest text-xs">UNABLE TO RETRIEVE SCHEDULE DATA.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-20 py-12 px-8 glass rounded-3xl text-center border-white/5 bg-white/[0.01]">
+        <h3 class="text-xs font-black text-gray-500 mb-4 uppercase tracking-[0.3em]">Information</h3>
+        <p class="text-gray-600 max-w-3xl mx-auto text-[10px] font-bold uppercase tracking-[0.2em] leading-relaxed">Schedules are subject to change based on official broadcast delays. We update our data daily to ensure accuracy.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateCountdowns() {
+        // Indian Standard Time is UTC + 5:30
+        const getISTDate = () => {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * 5.5));
+        };
+
+        const nowIST = getISTDate();
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDayIdx = nowIST.getDay();
+
+        document.querySelectorAll('.countdown-container').forEach(container => {
+            const dayStr = container.dataset.day;
+            const timeStr = container.dataset.time;
+            const timerSpan = container.querySelector('.countdown-timer');
+
+            if (!timeStr || timeStr === "TBA") {
+                timerSpan.textContent = "Time TBA";
+                return;
+            }
+
+            try {
+                const targetDayIdx = daysOfWeek.indexOf(dayStr);
+                if (targetDayIdx === -1) return;
+
+                let daysDiff = targetDayIdx - currentDayIdx;
+                if (daysDiff < 0) daysDiff += 7;
+
+                const targetDate = new Date(nowIST);
+                targetDate.setDate(nowIST.getDate() + daysDiff);
+
+                // Parse time (handle "12:00 PM", "14:00", etc.)
+                let hours = 0, minutes = 0;
+                const timeMatch = timeStr.match(/(\d{1,2})[:.](\d{2})\s*(AM|PM)?/i);
+                if (timeMatch) {
+                    hours = parseInt(timeMatch[1]);
+                    minutes = parseInt(timeMatch[2]);
+                    const ampm = timeMatch[3];
+                    if (ampm) {
+                        if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
+                        if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
+                    }
+                }
+
+                targetDate.setHours(hours, minutes, 0, 0);
+
+                // If target time today has passed, move to next week
+                if (daysDiff === 0 && targetDate < nowIST) {
+                    targetDate.setDate(targetDate.getDate() + 7);
+                }
+
+                const diff = targetDate - nowIST;
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const pad = (num) => String(num).padStart(2, '0');
+                timerSpan.textContent = `${pad(d)}D : ${pad(h)}H : ${pad(m)}M : ${pad(s)}S`;
+            } catch (e) {
+                console.error(e);
+                timerSpan.textContent = "Invalid Time";
+            }
+        });
+    }
+
+    setInterval(updateCountdowns, 1000);
+    document.addEventListener('DOMContentLoaded', updateCountdowns);
+</script>
+{% endblock %}

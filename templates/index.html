@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_name }} · Premium Anime Catalogue{% endblock %}
+{% block og_image %}{{ trending[0].image if trending else logo_url }}{% endblock %}
+
+{% block content %}
+{% set hero = trending[0] if trending else None %}
+
+<!-- HERO -->
+{% if hero %}
+<section class="hero-section">
+    <div class="hero-slide">
+        <!-- Soft blurred fill so landscape contain never leaves empty gaps -->
+        <div class="hero-bg" style="background-image: url('{{ hero.image or logo_url }}'); background-size: cover; filter: brightness(0.35) blur(18px); transform: scale(1.15);"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:1.5rem;">
+            <div class="hero-poster-landscape" style="flex:1 1 280px;max-width:560px;border-radius:12px;overflow:hidden;border:1px solid var(--glass-border);box-shadow:0 12px 40px rgba(0,0,0,0.5);background:var(--bg-elevated);">
+                <img src="{{ hero.image or logo_url }}"
+                     alt="{{ hero.title or 'Featured' }}"
+                     style="width:100%;height:auto;max-height:320px;object-fit:contain;object-position:center;display:block;image-orientation:from-image;"
+                     onerror="this.style.display='none'">
+            </div>
+            <div style="flex:1 1 240px;min-width:200px;">
+                <div class="hero-meta">
+                    <span class="badge"><i class="fas fa-bolt"></i> Trending</span>
+                    {% if hero.score %}<span><i class="fas fa-star" style="color:var(--accent-yellow)"></i> {{ hero.score }}</span>{% endif %}
+                    {% if hero.year %}<span>{{ hero.year }}</span>{% endif %}
+                    {% if hero.category %}<span>{{ hero.category }}</span>{% endif %}
+                </div>
+                <h1 class="hero-title">{{ hero.title or hero.title_english or 'Featured Anime' }}</h1>
+                <div class="hero-actions">
+                    <a href="/anime/{{ hero.slug or hero.mal_id }}" class="btn btn-accent">
+                        <i class="fas fa-play"></i> View Details
+                    </a>
+                    <a href="/search" class="btn btn-ghost">
+                        <i class="fas fa-compass"></i> Browse Catalogue
+                    </a>
+                    <a href="/categories" class="btn btn-ghost">
+                        <i class="fas fa-th-large"></i> Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<section class="section" style="padding-top: 3rem;">
+    <div class="container">
+        <div class="empty-state">
+            <i class="fas fa-film"></i>
+            <h3>Welcome to {{ site_name }}</h3>
+            <p>The catalog is being prepared. Check back soon, or explore categories and search.</p>
+            <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;">
+                <a href="/categories" class="btn btn-primary">Browse Categories</a>
+                <a href="/search" class="btn btn-ghost">Search</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div class="container page-enter">
+    <!-- TRENDING ROW -->
+    {% if trending and trending|length > 1 %}
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title"><span class="icon"></span> Trending Now</h2>
+            <a href="/search" class="section-link">See all →</a>
+        </div>
+        <div class="row-wrapper">
+            <div class="row-scroll" id="trending-row">
+                {% for item in trending %}
+                <a href="/anime/{{ item.slug or item.mal_id }}" class="anime-card">
+                    <div class="poster-wrap">
+                        <img src="{{ item.image or item.poster or '' }}"
+                             alt="{{ item.title or 'Anime' }}"
+                             loading="lazy"
+                             onerror="this.src='https://via.placeholder.com/300x450/14141f/7c3aed?text=No+Image'">
+                        <div class="poster-overlay">
+                            <span class="btn btn-sm btn-accent">View</span>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">{{ item.title or item.title_english or 'Untitled' }}</div>
+                        <div class="card-meta">
+                            {% if item.score %}<span class="score"><i class="fas fa-star" style="font-size:0.65rem"></i> {{ item.score }}</span>{% endif %}
+                            {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- RECENT / LATEST -->
+    {% if recent %}
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title"><span class="icon" style="background:var(--accent-blue);box-shadow:0 0 10px var(--accent-blue)"></span> Latest Updates</h2>
+            <a href="/search" class="section-link">View more →</a>
+        </div>
+        <div class="anime-grid">
+            {% for item in recent %}
+            <a href="/anime/{{ item.slug or item.mal_id }}" class="anime-card">
+                <div class="poster-wrap">
+                    <img src="{{ item.image or item.poster or '' }}"
+                         alt="{{ item.title or 'Anime' }}"
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/300x450/14141f/7c3aed?text=No+Image'">
+                    <div class="poster-overlay">
+                        <span class="btn btn-sm btn-accent">View</span>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title">{{ item.title or item.title_english or 'Untitled' }}</div>
+                    <div class="card-meta">
+                        {% if item.score %}<span class="score"><i class="fas fa-star" style="font-size:0.65rem"></i> {{ item.score }}</span>{% endif %}
+                        {% if item.category %}<span>{{ item.category }}</span>{% endif %}
+                        {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CATEGORIES PREVIEW -->
+    {% if categories %}
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title"><span class="icon" style="background:var(--primary);box-shadow:0 0 10px var(--primary)"></span> Browse by Category</h2>
+            <a href="/categories" class="section-link">All categories →</a>
+        </div>
+        <div class="category-grid">
+            {% for cat in categories[:12] %}
+            <a href="/category/{{ cat.name | urlencode }}" class="category-card">
+                <div class="cat-name">{{ cat.name }}</div>
+                <div class="cat-count">Explore collection</div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

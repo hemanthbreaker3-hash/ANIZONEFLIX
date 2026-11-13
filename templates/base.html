@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}{{ site_name or 'ANIZONEFLIX' }}{% endblock %}</title>
+
+    {% if logo_url %}
+    <link rel="icon" href="{{ logo_url }}">
+    <link rel="shortcut icon" href="{{ logo_url }}">
+    {% else %}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    {% endif %}
+
+    <meta name="description" content="{% block description %}Your anime destination — a premium catalog with fast search and a clean browsing experience.{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{{ site_name or 'ANIZONEFLIX' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}A premium anime catalog with modern streaming-inspired design.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ logo_url }}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ site_name or 'ANIZONEFLIX' }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0a0a0f">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/style.css?v=3.3">
+
+    <script>
+        // Prevent theme flash
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-theme');
+            }
+        } catch (e) {}
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- ========== HEADER ========== -->
+    <header class="site-header" id="site-header">
+        <div class="header-inner">
+            <a href="/" class="brand">
+                {% if logo_url %}
+                <img src="{{ logo_url }}" alt="Logo" class="brand-logo" width="40" height="40">
+                {% endif %}
+                <span class="brand-name">{{ site_name or 'ANIZONEFLIX' }}</span>
+            </a>
+
+            <nav class="nav-links" id="nav-links">
+                <a href="/" class="nav-link {% if request and request.url.path == '/' %}active{% endif %}">Home</a>
+                <a href="/categories" class="nav-link {% if request and '/categor' in request.url.path %}active{% endif %}">Categories</a>
+                <a href="/search" class="nav-link {% if request and request.url.path == '/search' %}active{% endif %}">Search</a>
+                <a href="/schedule" class="nav-link {% if request and request.url.path == '/schedule' %}active{% endif %}">Schedule</a>
+                <a href="/az-index" class="nav-link {% if request and request.url.path == '/az-index' %}active{% endif %}">A–Z</a>
+            </nav>
+
+            <form class="header-search" action="/search" method="get" role="search">
+                <i class="fas fa-search search-icon"></i>
+                <input type="search" name="q" placeholder="Search anime..." value="{{ query or '' }}" autocomplete="off" aria-label="Search">
+            </form>
+
+            <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========== MAIN ========== -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">{{ site_name or 'ANIZONEFLIX' }}</div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/categories">Categories</a>
+                <a href="/search">Search</a>
+                <a href="/schedule">Schedule</a>
+                <a href="/az-index">A–Z Index</a>
+            </div>
+            <div class="footer-copy">
+                © {{ site_name or 'ANIZONEFLIX' }} · Premium anime catalog
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/static/js/main.js?v=3.0"></script>
+    <script>
+        // Header scroll effect
+        (function () {
+            const header = document.getElementById('site-header');
+            if (!header) return;
+            const onScroll = () => {
+                header.classList.toggle('scrolled', window.scrollY > 24);
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+
+        // Mobile menu
+        (function () {
+            const toggle = document.getElementById('menu-toggle');
+            const nav = document.getElementById('nav-links');
+            if (!toggle || !nav) return;
+            toggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+                const icon = toggle.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-times');
+                }
+            });
+            // Close on link click
+            nav.querySelectorAll('a').forEach(a => {
+                a.addEventListener('click', () => {
+                    nav.classList.remove('open');
+                    const icon = toggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                });
+            });
+        })();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ANIZONEFLIX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --tg-theme-bg: #050505;
+            --tg-accent: #e50914;
+            --tg-glass: rgba(15, 15, 15, 0.7);
+        }
+        body { background-color: var(--tg-theme-bg); color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: var(--tg-glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+    </style>
+</head>
+<body class="p-4 md:p-12 selection:bg-red-500/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 animate-fade-in">
+            <h1 class="text-4xl font-black tracking-tighter flex items-center uppercase">
+                <div class="relative mr-4">
+                    <div class="absolute -inset-1 bg-red-600 rounded-full blur opacity-25"></div>
+                    <img src="{{ logo_url }}" class="w-12 h-12 rounded-full relative border border-white/10" alt="Logo">
+                </div>
+                Admin <span class="text-red-600 ml-2">Console</span>
+            </h1>
+            <div class="flex gap-4">
+                <button onclick="window.location.reload()" class="w-12 h-12 flex items-center justify-center glass rounded-xl hover:bg-white hover:text-black transition-all">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <a href="/" class="px-8 py-3 bg-white text-black font-black rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-xl">
+                    <i class="fa-solid fa-globe mr-2"></i> PUBLIC PORTAL
+                </a>
+            </div>
+        </div>
+
+        <div class="glass p-8 rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in" style="animation-delay: 0.1s">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/5">
+                            <th class="pb-6 px-4">Content Archive</th>
+                            <th class="pb-6 px-4 text-center">Status</th>
+                            <th class="pb-6 px-4 text-center">Episodes</th>
+                            <th class="pb-6 px-4 text-right">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for anime in posts %}
+                        <tr class="group hover:bg-white/5 transition-colors">
+                            <td class="py-6 px-4">
+                                <div class="flex items-center">
+                                    <div class="relative w-14 h-20 flex-shrink-0 mr-6 group-hover:scale-105 transition-transform duration-500">
+                                        <img src="{{ anime.image }}" class="w-full h-full object-cover rounded-lg shadow-lg border border-white/10" alt="">
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-lg leading-tight mb-1 group-hover:text-red-500 transition-colors">{{ anime.title }}</div>
+                                        <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">ID: {{ anime.mal_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-6 px-4 text-center">
+                                <span class="px-3 py-1 bg-red-600/10 text-red-500 text-[10px] font-black rounded-full border border-red-500/20 uppercase tracking-widest">
+                                    {{ anime.status }}
+                                </span>
+                            </td>
+                            <td class="py-6 px-4 text-center font-bold text-gray-400">{{ anime.episodes or 'N/A' }}</td>
+                            <td class="py-6 px-4 text-right">
+                                <div class="flex justify-end gap-3">
+                                    <a href="/admin/edit/{{ anime.mal_id }}" class="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-xl transition-all shadow-lg">
+                                        <i class="fa-solid fa-pen text-sm"></i>
+                                    </a>
+                                    <a href="/anime/{{ anime.slug }}" target="_blank" class="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white hover:text-black rounded-xl transition-all shadow-lg">
+                                        <i class="fa-solid fa-external-link text-sm"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

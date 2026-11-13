@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Categories · {{ site_name }}{% endblock %}
+{% block description %}Browse all anime categories on {{ site_name }}. Discover pages by genre and collection.{% endblock %}
+
+{% block content %}
+<div class="container page-enter">
+    <section class="section" style="padding-top: 2rem;">
+        <div class="section-header">
+            <h1 class="section-title">
+                <span class="icon"></span>
+                All Categories
+            </h1>
+            <a href="/search" class="section-link">Search catalogue →</a>
+        </div>
+
+        {% if categories %}
+        <div class="category-grid fade-in">
+            {% for cat in categories %}
+            <a href="/category/{{ cat.name | urlencode }}" class="category-card">
+                <div class="cat-name">{{ cat.name }}</div>
+                <div class="cat-count">
+                    {% if cat.count is defined and cat.count > 0 %}
+                        {{ cat.count }} page{{ 's' if cat.count != 1 else '' }}
+                    {% else %}
+                        Browse collection
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <h3>No categories yet</h3>
+            <p>Categories will appear here once content is organized.</p>
+            <a href="/" class="btn btn-primary" style="margin-top: 1.25rem;">Back to Home</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

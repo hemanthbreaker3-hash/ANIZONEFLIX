@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Compatibility entry point: all VPS deployments use the same safe installer.
+set -Eeuo pipefail
+cd "$(dirname "$0")"
+exec bash deploy.sh "$@"

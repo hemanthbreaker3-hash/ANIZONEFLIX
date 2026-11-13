@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <!-- Header Section -->
+    <div class="text-center mb-16 animate-fade-in text-[var(--text-main)]">
+        <h1 class="text-4xl md:text-7xl font-black mb-6 tracking-tighter uppercase grad-text leading-none text-[var(--text-main)]">Anime <span class="text-[var(--primary)]">Index</span></h1>
+        <p class="text-[var(--text-dim)] font-bold text-[10px] uppercase tracking-[0.3em] max-w-xl mx-auto">Browse our entire anime collection alphabetically.</p>
+    </div>
+
+    <!-- Sticky Alpha-Nav -->
+    <div class="glass rounded-2xl p-4 mb-16 flex flex-wrap justify-center gap-2 sticky top-24 z-30 border-[var(--glass-border)] shadow-2xl backdrop-blur-xl no-select">
+        {% for char in chars %}
+        <a href="#char-{{ char }}" class="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl glass hover:bg-[var(--primary)] hover:text-white transition-all font-black text-[10px] border-[var(--glass-border)] active:scale-90 uppercase shadow-lg text-[var(--text-main)]">
+            {{ char }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Index Segments -->
+    <div class="space-y-24 text-[var(--text-main)]">
+        {% for char, items in indexed_data.items() %}
+        <div id="char-{{ char }}" class="scroll-mt-40 animate-fade-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <div class="flex items-center gap-6 mb-10">
+                <div class="w-16 h-16 rounded-2xl bg-[var(--primary)] text-white flex items-center justify-center text-3xl font-black shadow-[0_12px_32px_var(--primary-glow)] border-2 border-[var(--glass-border)]">
+                    {{ char }}
+                </div>
+                <div class="h-px flex-1 bg-gradient-to-r from-[var(--primary)]/40 via-[var(--primary)]/5 to-transparent"></div>
+            </div>
+
+            {% if items %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {% for item in items %}
+                <a href="/anime/{{ item.slug }}" class="glass p-6 rounded-2xl flex items-center justify-between hover:bg-[var(--primary)] hover:text-white group transition-all duration-300 border-[var(--glass-border)] shadow-xl hover:-translate-y-1 text-inherit">
+                    <span class="font-black text-[11px] uppercase tracking-[0.05em] truncate pr-4 text-inherit">{{ item.title }}</span>
+                    <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white group-hover:text-[var(--primary)] transition-all">
+                        <i class="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="glass p-20 rounded-[3rem] text-center border-dashed border-2 border-[var(--glass-border)] opacity-40">
+                <p class="text-[var(--text-dim)] font-black uppercase tracking-[0.3em] text-[10px]">No titles found for this letter.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

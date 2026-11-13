@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_name }} · {{ site_name }}{% endblock %}
+{% block description %}Browse all {{ category_name }} pages on {{ site_name }}.{% endblock %}
+
+{% block content %}
+<div class="container page-enter">
+    <section class="section" style="padding-top: 2rem;">
+        <div class="section-header">
+            <div>
+                <nav style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                    <a href="/categories" style="color: var(--accent-blue);">Categories</a>
+                    <span style="margin: 0 0.4rem;">/</span>
+                    <span>{{ category_name }}</span>
+                </nav>
+                <h1 class="section-title">
+                    <span class="icon"></span>
+                    {{ category_name }}
+                </h1>
+                {% if total is defined %}
+                <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.35rem;">
+                    {{ total }} page{{ 's' if total != 1 else '' }} in this category
+                </p>
+                {% endif %}
+            </div>
+            <a href="/categories" class="section-link">← All categories</a>
+        </div>
+
+        {% if results %}
+        <div class="anime-grid fade-in">
+            {% for item in results %}
+            <a href="/anime/{{ item.slug or item.mal_id }}" class="anime-card">
+                <div class="poster-wrap">
+                    <img
+                        src="{{ item.image or item.poster or '/static/css/placeholder.png' }}"
+                        alt="{{ item.title or item.title_english or 'Anime' }}"
+                        loading="lazy"
+                        onerror="this.src='https://via.placeholder.com/300x450/14141f/7c3aed?text=No+Image'"
+                    >
+                    <div class="poster-overlay">
+                        <span class="btn btn-sm btn-accent">View</span>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title">{{ item.title or item.title_english or 'Untitled' }}</div>
+                    <div class="card-meta">
+                        {% if item.score %}
+                        <span class="score"><i class="fas fa-star" style="font-size:0.65rem;"></i> {{ item.score }}</span>
+                        {% endif %}
+                        {% if item.year %}
+                        <span>{{ item.year }}</span>
+                        {% endif %}
+                        {% if item.status %}
+                        <span>{{ item.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if total > limit %}
+        <div class="pagination">
+            {% if skip > 0 %}
+            <a href="/category/{{ category_name | urlencode }}?skip={{ skip - limit if skip > limit else 0 }}&limit={{ limit }}">← Previous</a>
+            {% endif %}
+            <span class="active">{{ (skip // limit) + 1 }}</span>
+            {% if skip + limit < total %}
+            <a href="/category/{{ category_name | urlencode }}?skip={{ skip + limit }}&limit={{ limit }}">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No pages in “{{ category_name }}”</h3>
+            <p>This category is empty or still being populated.</p>
+            <a href="/categories" class="btn btn-primary" style="margin-top: 1.25rem;">Browse other categories</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

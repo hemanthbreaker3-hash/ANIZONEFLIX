@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}{{ anime.title }} - {{ site_name }}{% endblock %}
+{% block description %}{{ anime.synopsis[:160] }}{% endblock %}
+{% block og_title %}{{ anime.title }} - Watch Online{% endblock %}
+{% block og_description %}{{ anime.synopsis[:200] }}{% endblock %}
+{% block og_image %}{{ anime.image }}{% endblock %}
+{% block twitter_title %}{{ anime.title }}{% endblock %}
+{% block twitter_description %}{{ anime.synopsis[:160] }}{% endblock %}
+{% block twitter_image %}{{ anime.image }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    {% if anime %}
+    <!-- Immersive Header Section -->
+    <div class="relative rounded-3xl overflow-hidden glass mb-12 animate-fade-in group border-white/5">
+        <div class="absolute inset-0 z-0 bg-[#050505]">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent z-10"></div>
+            <img src="{{ anime.image or logo_url }}" class="w-full h-full object-cover opacity-10 blur-xl" alt="">
+        </div>
+
+        <div class="relative z-20 flex flex-col lg:flex-row items-center lg:items-end p-6 md:p-10 gap-8">
+            <div class="w-full max-w-[520px] aspect-video flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-2xl border border-[var(--glass-border)] group-hover:border-[var(--primary)] transition-all duration-700 flex items-center justify-center">
+                <img src="{{ anime.image or logo_url }}" class="w-full h-full object-contain object-center" style="image-orientation:from-image;max-height:360px;" alt="{{ anime.title }}">
+            </div>
+
+            <div class="flex-1 text-center lg:text-left text-[var(--text-main)]">
+                <div class="flex flex-wrap justify-center lg:justify-start gap-2 mb-4">
+                    {% if anime.category %}
+                    <span class="px-4 py-1.5 bg-[var(--primary)] text-white text-[9px] font-black rounded-full uppercase tracking-[0.15em] shadow-xl shadow-[var(--primary-glow)]">{{ anime.category }}</span>
+                    {% endif %}
+                    {% for genre in anime.genres %}
+                    <span class="px-3 py-1.5 glass text-[var(--text-dim)] text-[9px] font-bold rounded-full border-[var(--glass-border)] uppercase tracking-widest">{{ genre }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if anime.languages %}
+                <div class="flex flex-wrap justify-center lg:justify-start items-center gap-2 mb-6 text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)]">
+                    <span class="text-[var(--primary)] flex items-center gap-1.5 font-black"><i class="fa-solid fa-volume-high text-[var(--primary)]"></i> AUDIO LANGUAGES:</span>
+                    <span class="px-3 py-1 glass rounded-full text-white/90 border-[var(--glass-border)] tracking-wider">{{ anime.languages }}</span>
+                </div>
+                {% endif %}
+
+                <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight tracking-tighter uppercase text-[var(--text-main)]">{{ anime.title }}</h1>
+
+                <div class="flex flex-wrap justify-center lg:justify-start items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-[var(--text-dim)] mb-8">
+                    <span class="flex items-center text-[var(--accent)]"><i class="fa-solid fa-star mr-2"></i> {{ anime.score or 'N/A' }}</span>
+                    <span class="flex items-center"><i class="fa-solid fa-calendar mr-2 text-[var(--primary)]"></i> {{ anime.year or 'N/A' }}</span>
+                    <span class="flex items-center"><i class="fa-solid fa-info-circle mr-2 text-[var(--primary)]"></i> {{ anime.status or 'N/A' }}</span>
+                </div>
+
+                <p class="text-[var(--text-dim)] text-sm md:text-base max-w-3xl line-clamp-3 mb-8 leading-relaxed">{{ anime.synopsis }}</p>
+
+                <div class="flex flex-wrap justify-center lg:justify-start gap-4">
+                    {% if anime.trailer %}
+                    <a href="{{ anime.trailer }}" target="_blank" class="btn-accent px-8 py-3.5 text-[10px] tracking-[0.15em]">
+                        <i class="fa-solid fa-play mr-2"></i> WATCH TRAILER
+                    </a>
+                    {% endif %}
+
+                    {% if anime.custom_buttons %}
+                        {% for btn in anime.custom_buttons %}
+                        <a href="{{ btn.link|button_link_rewrite }}" target="_blank" class="btn-premium px-8 py-3.5 text-[10px] tracking-[0.15em] bg-white/10 hover:bg-[var(--primary)] text-white border-white/10">
+                            <i class="fa-solid fa-link mr-2"></i> {{ btn.name }}
+                        </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Core -->
+    <div class="space-y-16">
+        <!-- Episodes Section -->
+        {% if anime.seasons_links or episodes %}
+        <section class="glass rounded-3xl p-6 md:p-10 border-[var(--glass-border)] shadow-2xl">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-1.5 h-8 bg-[var(--primary)] rounded-full"></div>
+                <h3 class="text-3xl font-black tracking-tighter uppercase text-[var(--text-main)]">Get <span class="text-[var(--primary)]">Files</span></h3>
+            </div>
+
+            {% set season_groups = episodes | groupby('season') | list %}
+            <div class="flex flex-wrap gap-2 mb-8">
+                {% for season_group in season_groups %}
+                <button onclick="showSeason('season-{{ season_group.grouper }}')" id="btn-season-{{ season_group.grouper }}"
+                        class="season-btn px-5 py-2.5 glass rounded-lg font-bold text-[9px] uppercase tracking-widest border-[var(--glass-border)] active:scale-95 transition-all text-[var(--text-main)] flex items-center gap-2">
+                    <span>Season {{ season_group.grouper }}</span>
+                    {% if anime.newly_added_groups and ('Season ' ~ season_group.grouper) in anime.newly_added_groups %}
+                    <span class="flame-badge font-black text-[8px] px-2 py-0.5"><i class="fa-solid fa-fire text-[10px]"></i> NEW</span>
+                    {% endif %}
+                </button>
+                {% endfor %}
+
+                {% for season, links in anime.seasons_links.items() %}
+                <button onclick="showSeason('custom-{{ season|slugify }}')" id="btn-custom-{{ season|slugify }}"
+                        class="season-btn px-5 py-2.5 glass rounded-lg font-bold text-[9px] uppercase tracking-widest border-[var(--glass-border)] active:scale-95 transition-all text-[var(--text-main)] flex items-center gap-2">
+                    <span>{{ season }}</span>
+                    {% if anime.newly_added_groups and season in anime.newly_added_groups %}
+                    <span class="flame-badge font-black text-[8px] px-2 py-0.5"><i class="fa-solid fa-fire text-[10px]"></i> NEW</span>
+                    {% endif %}
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="space-y-6">
+                {% for season_group in season_groups %}
+                <div id="season-{{ season_group.grouper }}" class="season-content hidden animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for ep in season_group.list %}
+                    <div class="flex items-center justify-between p-6 glass rounded-2xl border-[var(--glass-border)] group hover:border-[var(--primary)] transition-all text-[var(--text-main)]">
+                        <div class="flex items-center gap-6">
+                            <div class="w-12 h-12 flex items-center justify-center bg-[var(--primary)] text-white rounded-xl font-black text-sm shadow-2xl shadow-[var(--primary-glow)]">
+                                {{ ep.episode }}
+                            </div>
+                            <div>
+                                <div class="font-black text-sm uppercase tracking-tight">{{ ep.title or 'Episode ' ~ ep.episode }}</div>
+                                <div class="text-[9px] font-black text-[var(--text-dim)] uppercase tracking-widest mt-1">{{ ep.quality }} • {{ ep.audio or 'Original' }}</div>
+                            </div>
+                        </div>
+                        <a href="/dl?url={{ (ep.file_id or ep.link)|urlencode }}" target="_blank" class="px-5 py-2 bg-[var(--primary)]/10 hover:bg-[var(--primary)] text-[var(--primary)] hover:text-white rounded-lg font-bold text-[9px] uppercase tracking-widest transition-all border border-[var(--primary)]/20">
+                            GET FILES
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                {% for season, links in anime.seasons_links.items() %}
+                <div id="custom-{{ season|slugify }}" class="season-content hidden animate-fade-in flex flex-wrap gap-3">
+                    {% for q, url in links.items() if url %}
+                    <a href="/dl?url={{ url|urlencode }}" target="_blank"
+                       class="flex-1 min-w-[100px] p-4 glass rounded-xl border-[var(--glass-border)] hover:bg-[var(--primary)] hover:text-white group transition-all text-center text-[var(--text-main)]">
+                        <span class="block text-[8px] font-bold text-[var(--text-dim)] group-hover:text-white/60 uppercase tracking-widest mb-1">Get Files</span>
+                        <span class="block text-base font-black uppercase tracking-tight">{{ q }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Custom Content Nodes -->
+        {% for box in anime.custom_boxes %}
+        <section class="glass rounded-3xl p-6 md:p-10 border-[var(--glass-border)] shadow-2xl relative overflow-hidden group/box">
+            <div class="absolute -top-10 -right-10 opacity-[0.03] group-hover/box:opacity-[0.07] transition-opacity duration-1000">
+                <i class="fa-solid fa-box-open text-[10rem] rotate-12"></i>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 relative z-10 text-[var(--text-main)]">
+                <div class="flex items-center gap-3">
+                    <div class="w-1.5 h-8 bg-[var(--primary)] rounded-full"></div>
+                    <h3 class="text-3xl font-black tracking-tighter uppercase">{{ box.name }}</h3>
+                </div>
+                {% if box.link %}
+                <a href="{{ box.link|button_link_rewrite }}" target="_blank" class="btn-premium px-6 py-3 text-[9px] tracking-widest">
+                    EXTERNAL LINK <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10 text-[var(--text-main)]">
+                {% for g_name, g_links in box.groups.items() %}
+                <div class="p-8 rounded-[2rem] glass bg-white/[0.02] border-[var(--glass-border)] hover:border-[var(--primary)]/20 transition-all">
+                    <h4 class="text-[10px] font-black text-[var(--text-dim)] uppercase tracking-[0.3em] mb-8 flex items-center justify-between gap-3">
+                        <span class="flex items-center gap-3">
+                            <i class="fa-solid fa-folder-open text-[var(--primary)]/50"></i> {{ g_name }}
+                        </span>
+                        {% if anime.newly_added_groups and g_name in anime.newly_added_groups %}
+                        <span class="flame-badge text-[8px] px-2 py-0.5"><i class="fa-solid fa-fire text-[10px]"></i> NEW</span>
+                        {% endif %}
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        {% for label, url in g_links.items() %}
+                        <a href="/dl?url={{ url|urlencode }}" target="_blank"
+                           class="px-4 py-3 glass bg-white/5 hover:bg-[var(--primary)] rounded-xl font-bold text-[9px] uppercase tracking-widest text-center transition-all border-[var(--glass-border)] hover:border-[var(--primary)]/40 text-inherit">
+                            {{ label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="py-40 text-center glass rounded-[4rem] border-white/5 animate-fade-in">
+        <i class="fa-solid fa-triangle-exclamation text-8xl text-red-600 mb-10 opacity-30"></i>
+        <h2 class="text-5xl font-black tracking-tighter uppercase grad-text">Title Not Found</h2>
+        <p class="text-gray-500 mt-6 text-lg font-medium">The requested content could not be found in our database.</p>
+        <a href="/" class="btn-premium mt-12 px-12 py-5 text-sm">BACK TO HOME</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showSeason(seasonId) {
+        document.querySelectorAll('.season-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.season-btn').forEach(btn => {
+            btn.classList.remove('bg-[var(--primary)]', 'text-white', 'border-[var(--primary)]/40');
+            btn.classList.add('glass', 'text-[var(--text-dim)]', 'border-[var(--glass-border)]');
+        });
+        const activeContent = document.getElementById(seasonId);
+        if (activeContent) activeContent.classList.remove('hidden');
+        const activeBtn = document.getElementById('btn-' + seasonId);
+        if (activeBtn) {
+            activeBtn.classList.remove('glass', 'text-[var(--text-dim)]', 'border-[var(--glass-border)]');
+            activeBtn.classList.add('bg-[var(--primary)]', 'text-white', 'border-[var(--primary)]/40');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstBtn = document.querySelector('.season-btn');
+        if (firstBtn) {
+            const seasonId = firstBtn.id.replace('btn-', '');
+            showSeason(seasonId);
+        } else {
+            const firstContent = document.querySelector('.season-content');
+            if (firstContent) firstContent.classList.remove('hidden');
+        }
+    });
+</script>
+{% endblock %}

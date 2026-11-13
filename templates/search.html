@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}Search: {{ query }}{% else %}Search{% endif %} · {{ site_name }}{% endblock %}
+{% block description %}Search the {{ site_name }} anime catalogue for titles, genres and more.{% endblock %}
+
+{% block content %}
+<div class="container page-enter">
+    <section class="search-hero">
+        <h1 class="text-gradient">{% if query %}Results for “{{ query }}”{% else %}Search Catalogue{% endif %}</h1>
+        <form class="search-box-large" action="/search" method="get" role="search">
+            <i class="fas fa-search icon"></i>
+            <input type="search" name="q" value="{{ query or '' }}" placeholder="Search by title, synonym…" autofocus autocomplete="off" aria-label="Search anime">
+        </form>
+        {% if categories %}
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:1.25rem;max-width:720px;margin-left:auto;margin-right:auto;">
+            {% for cat in categories[:16] %}
+            <a href="/category/{{ cat.name | urlencode }}" class="tag">{{ cat.name }}</a>
+            {% endfor %}
+            <a href="/categories" class="tag green">All categories →</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="section" style="padding-top:0.5rem;">
+        {% if results %}
+        <div class="section-header">
+            <h2 class="section-title"><span class="icon"></span>
+                {% if query %}{{ results|length }} result{{ 's' if results|length != 1 else '' }}{% else %}Browse{% endif %}
+            </h2>
+        </div>
+        <div class="anime-grid fade-in">
+            {% for item in results %}
+            <a href="{% if item.external_url %}{{ item.external_url }}{% else %}/anime/{{ item.slug or item.mal_id }}{% endif %}"
+               class="anime-card"
+               {% if item.external_url %}target="_blank" rel="noopener"{% endif %}>
+                <div class="poster-wrap">
+                    <img src="{{ item.image or item.poster or '' }}"
+                         alt="{{ item.title or item.title_english or 'Anime' }}"
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/300x450/14141f/7c3aed?text=No+Image'">
+                    <div class="poster-overlay">
+                        <span class="btn btn-sm btn-accent">{% if item.external_url %}Open{% else %}View{% endif %}</span>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title">{{ item.title or item.title_english or 'Untitled' }}</div>
+                    <div class="card-meta">
+                        {% if item.score %}<span class="score"><i class="fas fa-star" style="font-size:0.65rem"></i> {{ item.score }}</span>{% endif %}
+                        {% if item.category %}<span>{{ item.category }}</span>{% endif %}
+                        {% if item.year %}<span>{{ item.year }}</span>{% endif %}
+                        {% if item.source %}<span>{{ item.source }}</span>{% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% elif query %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No results for “{{ query }}”</h3>
+            <p>Try a different spelling, a shorter title, or browse categories.</p>
+            <a href="/categories" class="btn btn-primary" style="margin-top:1.25rem;">Browse Categories</a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-keyboard"></i>
+            <h3>Start typing to search</h3>
+            <p>Search by title, English name, or alternate names.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
